@@ -1,7 +1,9 @@
-import Image from "next/image";
+import Login from "@/app/Component/Login";
 
 export default function Home() {
   return (
-   <p className="bg-pink-700">Hello</p>
+    <>
+      <Login />
+    </>
   );
 }
