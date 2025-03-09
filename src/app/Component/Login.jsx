@@ -1,15 +1,80 @@
 "use client";
 import { LayoutDashboard, LayoutList } from "lucide-react";
 import React, { useState } from "react";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
 const Login = () => {
   const [view, setView] = useState("list");
   const [showAddTask, setShowAddTask] = useState(false);
 
+  const router = useRouter();
+
+  // const handleSucess = async (credentialResponse) => {
+  //   try {
+  //     const response = await fetch("http://localhost:4000/auth/google", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ token: credentialResponse.credential }),
+  //     });
+
+  //     const data = await response.json();
+  //     console.log("Backend response:", data);
+
+  //     if (response.ok) {
+  //       toast.success(data?.message);
+  //       // Store user data in cookies
+  //       Cookies.set("user", JSON.stringify(data.user), {
+  //         expires: 7,
+  //         path: "/",
+  //       });
+  //       router.push("/taskList"); // Redirect to Task List Page
+  //     } else {
+  //       throw new Error(data?.message || "Authentication failed");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error sending token to backend", error);
+  //     toast.error(error.message);
+  //   }
+  // };
+
+  const handleSuccess = async (credentialResponse) => {
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: credentialResponse.credential }),
+      });
+
+      const data = await response.json();
+      console.log("Server API response:", data);
+
+      if (response.ok) {
+        toast.success(data?.message);
+        Cookies.set("user", JSON.stringify(data.user), {
+          expires: 7,
+          path: "/",
+        });
+        router.push("/taskList");
+      } else {
+        throw new Error(data?.message || "Authentication failed");
+      }
+    } catch (error) {
+      console.error("Error in authentication", error);
+      toast.error(error.message);
+    }
+  };
+
+  const handleError = () => {
+    console.log("Google sign Error");
+  };
+
   return (
     <div className="p-6 flex align-middle items-center justify-between min-h-screen overflow-hidden">
       {/* Left Section - Login */}
-      <div className=" w-[30%] flex-col justify-center p-12 h-full">
+      {/* <div className=" w-[30%] flex-col justify-center p-12 h-full">
         <div className="space-y-6">
           <div className="flex items-center space-x-3">
             <div className="rounded-lg bg-purple-100 p-2">
@@ -55,7 +120,10 @@ const Login = () => {
             <span>Continue with Google</span>
           </button>
         </div>
-      </div>
+      </div> */}
+      <GoogleOAuthProvider clientId="592301412874-r90ni5hv8l0rgmnfbkos32dkd46ra96n.apps.googleusercontent.com">
+        <GoogleLogin onSuccess={handleSuccess} onError={handleError} />
+      </GoogleOAuthProvider>
 
       {/* Right Section - Task List */}
       <div className=" w-[65%] rounded-xl bg-contain bg-[url('/circles_bg.png')] ">
